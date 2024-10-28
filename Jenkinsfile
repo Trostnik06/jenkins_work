@@ -67,3 +67,4 @@ pipeline {
             sh "docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true"
         }
     }
+}
