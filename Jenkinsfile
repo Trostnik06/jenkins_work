@@ -1,49 +1,43 @@
 pipeline {
     agent any
 
-    docker {
-	image "xxxxxxx/dotnet:latest"
-        registryUrl 'xxxxxxx'
-        registryCredentialsId "docker-cred"
-        reuseNode true
-	}
-
-
     environment {
-        DOCKER_IMAGE = 'your-dockerhub-username/hello-world-app' // Замените на имя Docker-образа
-        DOCKER_TAG = "latest" // Тег образа (можно использовать версию или "latest")
+        DOCKER_IMAGE = 'your-dockerhub-username/hello-world-app' // Укажите имя Docker-образа
+        DOCKER_TAG = "latest" // Можно использовать "latest" или тег версии
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                // Клонируем репозиторий
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                // Устанавливаем зависимости
+                sh 'npm install'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                // Запускаем тесты
+                sh 'node test.js'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
-                // Сборка Docker-образа приложения
+                // Сборка Docker-образа
                 script {
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                 }
             }
         }
 
-        stage('Test Application') {
-            steps {
-                // Запускаем контейнер для тестирования
-                script {
-                    docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").withRun('-p 3000:3000') { container ->
-                        // Выполняем тест с ожиданием доступности приложения
-                        sh "sleep 5"  // Даем контейнеру время для запуска
-                        sh "curl -f http://localhost:3000" // Проверяем доступность сервера на 200 и текст ответа
-                    }
-                }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            when {
-                expression {
-                    // Загружаем образ только если предыдущие шаги были успешными
-                    currentBuild.result == null || currentBuild.result == 'SUCCESS'
-                }
-            }
+        stage('Push Docker Image') {
             steps {
                 // Аутентификация в Docker Hub и загрузка образа
                 script {
@@ -53,11 +47,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy') {
+            steps {
+                // Развертывание Docker-контейнера
+                sh '''
+                docker rm -f hello-world-app || true
+                docker run -d -p 3000:3000 --name hello-world-app ${DOCKER_IMAGE}:${DOCKER_TAG}
+                '''
+            }
+        }
     }
 
     post {
         always {
-            // Очищаем образы Docker после завершения конвейера
+            // Удаляем Docker-образы после завершения
             sh "docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true"
         }
     }
