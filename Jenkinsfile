@@ -1,26 +1,12 @@
 pipeline {
-    agent {
-        docker { 
-            image "xxxxxxx/dotnet:latest"  // Замените на ваш Docker-образ с .NET
-            registryUrl 'xxxxxxx'          // URL вашего Docker Registry
-            registryCredentialsId "docker-cred" // Учетные данные для Docker Registry
-            reuseNode true
-        }
-    }
-    
+    agent any
+
     environment {
-        DOCKER_IMAGE = 'your-dockerhub-username/hello-world-app' // Имя вашего Docker-образа для Express-приложения
-        DOCKER_TAG = "latest" // Тег Docker-образа (можно заменить на версию)
+        DOCKER_IMAGE = 'your-dockerhub-username/hello-world-app' // Замените на имя Docker-образа
+        DOCKER_TAG = "latest" // Тег образа (можно использовать версию или "latest")
     }
 
     stages {
-        stage('Dotnet Test') {
-            steps {
-                // Проверяем установленную версию .NET в образе
-                sh 'dotnet --version'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 // Сборка Docker-образа приложения
@@ -32,7 +18,7 @@ pipeline {
 
         stage('Test Application') {
             steps {
-                // Запускаем контейнер для тестирования приложения
+                // Запускаем контейнер для тестирования
                 script {
                     docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").withRun('-p 3000:3000') { container ->
                         // Выполняем тест с ожиданием доступности приложения
