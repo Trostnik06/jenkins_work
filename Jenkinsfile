@@ -5,6 +5,12 @@ pipeline {
         DOCKER_IMAGE = 'your-dockerhub-username/hello-world-app' // Замените на имя Docker-образа
         DOCKER_TAG = "latest" // Тег образа (можно использовать версию или "latest")
     }
+    docker { 
+	 image "xxxxxxx/dotnet:latest"
+         registryUrl 'xxxxxxx'
+         registryCredentialsId "docker-cred"
+         reuseNode true
+    }
 
     stages {
         stage('Build Docker Image') {
