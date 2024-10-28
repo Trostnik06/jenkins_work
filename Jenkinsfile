@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'your-dockerhub-username/hello-world-app' // Укажите имя Docker-образа
+        DOCKER_IMAGE = 'lunarik/hello-world-app' // Укажите имя Docker-образа
         DOCKER_TAG = "latest" // Можно использовать "latest" или тег версии
     }
 
