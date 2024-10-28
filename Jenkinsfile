@@ -1,7 +1,7 @@
 pipeline {
     agent any
 
-   docker {
+    docker {
 	image "xxxxxxx/dotnet:latest"
         registryUrl 'xxxxxxx'
         registryCredentialsId "docker-cred"
